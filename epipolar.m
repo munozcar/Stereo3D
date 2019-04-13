@@ -1,51 +1,74 @@
 % Epipolar Geometry
-
 % Getting Correspondences
 
-% Load and show stereo images 
-img_left = imread("/home/weinman/courses/CSC262/images/left.jpg");
-img_right = imread("/home/weinman/courses/CSC262/images/right.jpg"); 
+% Load stereo images 
+img_left = im2double(rgb2gray(imread('/home/weinman/courses/CSC262/images/left.jpg')));
+img_right = im2double(rgb2gray(imread('/home/weinman/courses/CSC262/images/right.jpg'))); 
 
-figure(1);
-imshow(img_left);
-title('Left Image');
-pause(0.5);
+features_left = kpdet(img_left);
+features_right = kpdet(img_right);
 
-figure(2);
-imshow(img_right);
-title('Right Image');
-pause(0.5);
+descriptors_left = kpfeat(img_left, features_left);
+descriptors_right = kpfeat(img_right, features_right);
 
-N = 20;
-% Check if points already selected, is so, load coordinates
-% Make sure corr.mat file is in same directory as epipolar.m
-if isfile("corr.mat")
-    load 'corr.mat';
-    for i = 1 : N
-        figure(1); 
-        hold on; 
-        plot(xx(i,1), yy(i,1)); 
-        figure(2); 
-        hold on; 
-        plot(xx(i,2), yy(i,2));
+[rows1, cols1] = find(features_left);
+[rows2, cols2] = find(features_right);
+
+feat_matrix = zeros(size(cols1, 1), 2);
+
+% Calculating translations for each feature
+for i=1:size(feat_matrix, 1)
+    key = descriptors_left(i,:);
+    diff_key = bsxfun(@minus, key, descriptors_right);
+    
+    % Checking if the feature is NaN 
+    if isnan(key(1)) 
+        feat_matrix(i,1) = NaN;
+        feat_matrix(i,2) = NaN;
+        continue;
     end
-else
-    % Loop allows user to select N correspondance points 
-    xx = zeros(N,2);
-    yy = zeros(N,2);
+   % Finding euclidean distances 
+    euclidean_dist_loop = sum((diff_key).^2,2);
 
-    for i = 1 : N
-       figure(1); 
-       [xx(i,1), yy(i,1)] = ginput(1); 
-       hold on; 
-       plot(xx(i,1), yy(i,1)); 
-       figure(2); 
-       [xx(i,2), yy(i,2)] = ginput(1);
+    % Finding the closest match
+    sorted_euclidean_dist_loop = sort(euclidean_dist_loop);
+    
+    %If the feature doesn't match well enough, set it to nan
+    if ((sorted_euclidean_dist_loop(1)/sorted_euclidean_dist_loop(2)) > 0.5)
+        feat_matrix(i,1) = NaN;
+        feat_matrix(i,2) = NaN;
+        continue;
     end
-    save('corr.mat', 'xx', 'yy'); 
+    min_ind = find(euclidean_dist_loop == sorted_euclidean_dist_loop(1));
+    Tc = cols2(min_ind) - cols1(i) ;
+    Tr = rows2(min_ind) - rows1(i) ;
+    
+    feat_matrix(i,1) = Tr;
+    feat_matrix(i,2) = Tc;
 end
 
+%%
 
+rowSortedTrans = sort(feat_matrix(:,1));
+colSortedTrans = sort(feat_matrix(:,2));
+
+%Find first NaN
+firstNaN = find(isnan(rowSortedTrans));
+firstNaN = firstNaN(1);
+
+Tr_median = rowSortedTrans(floor((firstNaN-1)/2));
+Tc_median = colSortedTrans(floor((firstNaN-1)/2));
+
+translationMedian = [Tr_median Tc_median];
+
+stitchedImageMedian = stitch(img_right, img_left, translationMedian);
+figure;
+imshow(stitchedImageMedian, []);
+title('Stitched image with median');
+
+
+
+%%
 
 % Constructing the System Matrix
 % Next, construct the system matrix S, a 20x9 matrix whose rows are given
