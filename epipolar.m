@@ -1,23 +1,8 @@
-%% Epipolar Geometry
-%
-%% Overview
-% We aim to analyze the epipolar geometry describing a pair of images of a
-% bookshelf pictured from different reference points. Our goal is to obtain
-% corresponding points in both images with which we construct a system
-% matrix. Then, we perform singular value decomposition on this matrix in
-% order to estimate the fundamental matrix which allows for the full
-% reconstruction of the epipolar geometry. We hope that this exercise will
-% allow us to increase our knowledge of stereopsis and develop a greater
-% intuition for the linear algebra concepts involved in this topic.
+% Epipolar Geometry
 
+% Getting Correspondences
 
-%% A. Getting Correspondences
-% To begin with, we manually select 20 points of correspondence on two
-% images of a bookshelf, shown below. These 20 points are selected such
-% that as few as posible are coplanar and we try to span a relatively large
-% region.
-
-% Load and show images 
+% Load and show stereo images 
 img_left = imread("/home/weinman/courses/CSC262/images/left.jpg");
 img_right = imread("/home/weinman/courses/CSC262/images/right.jpg"); 
 
@@ -62,8 +47,8 @@ end
 
 
 
-%% B. Constructing the System Matrix
-% Next, we construct the system matrix S, a 20x9 matrix whose rows are given
+% Constructing the System Matrix
+% Next, construct the system matrix S, a 20x9 matrix whose rows are given
 % by [xLxR, xLyR, xL, yLxR, yLyR, yL, xR, yR, 1], where xL,xR and yL,yR are
 % the x and y coordinates, respectively, of each correspondence point of
 % the images. 
@@ -74,24 +59,15 @@ for i=1:N
         yy(i, 1) xx(i, 2) yy(i, 2) 1]; 
 end
 
-%% C. Estimating the Fundamental matrix
-% We further apply singular value decomposition to the system matrix $S =
+% Estimating the Fundamental matrix
+% Apply singular value decomposition to the system matrix $S =
 % UWV^t$ in order to estimate the fundamental matrix. For an initial
-% estimate, we extract the column of V corresponding to the smallest
+% estimate, extract the column of V corresponding to the smallest
 % singular value. The rank of this initial estimate of the fundamental
-% matrix is 3. Then, we apply singular value decomposition to this initial
-% estimate, which yields the singular values: 0.8435, 0.5372, and
-% 5.8225e-06. The extremely small magnitude of the third singular value
+% matrix is 3. Then, apply singular value decomposition to this initial
+% estimate. The extremely small magnitude of the third singular value
 % relative to the other two is desirable, since this allows us to set it
-% equal to zero in order to enforce a singularity and reduce the rank of
-% the fundamental matrix. It's low value further lets us know that
-% noise and numerical errors by inaccurate correspondances do not play a
-% significant role. The first two singular values have magnitudes of
-% similar size, as expected, and allow us to reconstruct the
-% fundamental matrix. We find that the reconstruction of the adjusted
-% fundamental matrix has rank = 2.
-% 
-
+% equal to zero in order to enforce a singularity and reduce the rank.
 
 [U, S, V] = svd(corr_matrix); 
 smallest_col_V = V(:, 8); 
@@ -103,16 +79,9 @@ S_f(3,3) = 0;
 F = U_f*S_f*V_f'; 
 rank(F); % Now, after SVD, it has rank 2
 
-%% D. Visualizing Epipoles
+% Visualizing Epipoles
 % Now that we have an estimate of the fundamental matrix, we can find the
-% epipolar lines for each correspondence. For a point in the left image
-% $p_l = (100,50)$, we find the epipolar line coefficients as $u_R=Fp_L^t$.
-% The epipolar line in the other image is described by $p_R^tu_R=0$. We do
-% the inverse for the point $p_l = (520,250)$ on the right image. The
-% figures below show each point and their corresponding epipolar line in
-% the other image. In both cases, observe that the epipolar line in one
-% images passes through its respective correspondence point in the other
-% image. Different colors are provided for convenience.
+% epipolar lines for each correspondence. 
 
 img_width = size(img_left, 2); 
 
@@ -153,10 +122,8 @@ figure(3);
 hold on; 
 plot([x_R(1) x_R(2)], [y_R1 y_R2], 'g', 'linewidth',2);
 title("Right Image"); 
-%%
-% Finally, we repeat the above algorithm for all 20 correspondences and
-% plot the epipolar lines on the right image. The correspondences and lines
-% are displayed below. 
+% Finally, repeat the above algorithm for all 20 correspondences and
+% plot the epipolar lines on the right image.
 
 % Plot correspondances and epipolar lines for all in the right image
 for i = 1:N
@@ -176,33 +143,8 @@ for i = 1:N
     plot([x_R(1) x_R(2)], [y_R1 y_R2], 'linewidth',2);
 end
 
-%%
-% Note that all lines go through (or very close) to their respective points
-% of correspondence. The epipolar lines further intersect at almost the
-% same point: the epipole, which we (manually) determine is at
-% approximately x = 276.6737, y = 193.02892. The epipole tells us where, on
-% the right image plane, we can find the location at which the camera was
-% when it obtained the left image. The perspective we observe in the left
-% image further agrees with this result. There is, however, no way to know
-% if these pictures were taken at the same time by a pair of cameras or if
-% one of the images was taken after the other by moving the camera: There
-% is no temporal information in any of the variables determined through
-% this exercise.
-% 
-
-%% Conclusion
-% We succesfully determined the fundamental matrix and found epipolar lines
-% for a set of correspondences between two images. We were able to describe
-% the epipolar geometry of the given setup and found the epipole with great
-% accuracy. We are satisfied with the precision of our values. The results
-% from this laboratory build upon our previous work on feature detection
-% and matching, and will soon allow us to implement even more complex
-% algorithms involving 3-D reconstruction.
-
 %% Acknowledgements
 % The stereo images were acquired by Jerod Weinman in his office and are
-% released into the public domain. This lab was completed by following the
-% instructions provided by Jerod Weinman, available at
+% released into the public domain. This algortihm was completed following
+% instruction provided by Jerod Weinman, available at
 % https://www.cs.grinnell.edu/~weinman/courses/CSC262/2019S/labs/epipolar-geometry.html.
-% Mathematical concepts for stereo taken from Trucco & Verri, Int. Tech. for
-% 3-D Comp. Vision, 1998, Chapter 7. 
