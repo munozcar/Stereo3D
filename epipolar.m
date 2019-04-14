@@ -48,7 +48,7 @@ for i=1:size(feat_matrix, 1)
     sorted_euclidean_dist_loop = sort(euclidean_dist_loop);
     
     %If the feature doesn't match well enough, set it to nan
-    if ((sorted_euclidean_dist_loop(1)/sorted_euclidean_dist_loop(2)) > 0.2)
+    if ((sorted_euclidean_dist_loop(1)/sorted_euclidean_dist_loop(2)) > 0.3)
         feat_matrix(i,1) = NaN;
         feat_matrix(i,2) = NaN;
         xx(i,1) = NaN;
