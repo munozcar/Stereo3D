@@ -26,11 +26,20 @@ descriptors_right = kpfeat(img_right, features_right);
 [rows2, cols2] = find(features_right);
 
 feat_matrix = zeros(size(cols1, 1), 2);
-xx = zeros(size(cols1, 1), 2);
-yy = zeros(size(cols1, 1), 2);
+xx = zeros(size(cols1, 1), 3);
+yy = zeros(size(cols1, 1), 3);
 
+%% 
+%
 
 % Calculating translations for each feature
+
+% Set initial threshold
+t = 0.05;
+matches = 0;
+
+while matches < 8
+matches = 0;
 for i=1:size(feat_matrix, 1)
     key = descriptors_left(i,:);
     diff_key = bsxfun(@minus, key, descriptors_right);
@@ -48,24 +57,67 @@ for i=1:size(feat_matrix, 1)
     sorted_euclidean_dist_loop = sort(euclidean_dist_loop);
     
     %If the feature doesn't match well enough, set it to nan
-    if ((sorted_euclidean_dist_loop(1)/sorted_euclidean_dist_loop(2)) > 0.3)
+    if ((sorted_euclidean_dist_loop(1)/sorted_euclidean_dist_loop(2)) > t)
         feat_matrix(i,1) = NaN;
         feat_matrix(i,2) = NaN;
         xx(i,1) = NaN;
         xx(i,2) = NaN;
         yy(i,1) = NaN;
         yy(i,2) = NaN;
+        yy(i,3) = NaN;
+        xx(i,3) = NaN;
         continue;
     end
-    min_ind = find(euclidean_dist_loop == sorted_euclidean_dist_loop(1));
+    mindist = sorted_euclidean_dist_loop(1);
+
+    min_ind = find(euclidean_dist_loop == mindist);
     Tc = cols2(min_ind) - cols1(i) ;
     Tr = rows2(min_ind) - rows1(i) ;
-    xx(i,1) = cols1(i);
-    xx(i,2) = cols2(min_ind);
-    yy(i,1) = rows1(i);
-    yy(i,2) = rows2(min_ind);
-    feat_matrix(i,1) = Tr;
-    feat_matrix(i,2) = Tc;
+    
+    if (ismember(cols1(i), xx(:,1)))
+        corrind = find(xx(:,1) == cols1(i));
+        if (xx(corrind,3) < mindist)
+            xx(i,1) = NaN;
+            xx(i,2) = NaN;
+            yy(i,1) = NaN;
+            yy(i,2) = NaN;
+            yy(i,3) = NaN;
+            xx(i,3) = NaN;
+            feat_matrix(i,1) = NaN;
+            feat_matrix(i,2) = NaN;
+        else % overwrite best match for given feature
+            xx(i,1) = cols1(i);
+            xx(i,2) = cols2(min_ind);
+            yy(i,1) = rows1(i);
+            yy(i,2) = rows2(min_ind);
+            yy(i,3) = mindist;
+            xx(i,3) = mindist;
+            feat_matrix(i,1) = Tr;
+            feat_matrix(i,2) = Tc;
+            xx(corrind,1) = NaN;
+            xx(corrind,2) = NaN;
+            yy(corrind,1) = NaN;
+            yy(corrind,2) = NaN;
+            yy(corrind,3) = NaN;
+            xx(corrind,3) = NaN;
+            feat_matrix(corrind,1) = NaN;
+            feat_matrix(corrind,2) = NaN;
+        end
+    else
+        xx(i,1) = cols1(i);
+        xx(i,2) = cols2(min_ind);
+        yy(i,1) = rows1(i);
+        yy(i,2) = rows2(min_ind);
+        yy(i,3) = mindist;
+        xx(i,3) = mindist;
+        feat_matrix(i,1) = Tr;
+        feat_matrix(i,2) = Tc;
+        
+        matches = matches+1;
+    end
+    
+end
+t=t+0.02;
 end
 
 %%
