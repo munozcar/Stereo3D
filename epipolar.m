@@ -2,9 +2,12 @@
 % Getting Correspondences
 
 % Load stereo images 
-img_left = im2double(rgb2gray(imread('/home/munozcar/Desktop/moto1.png')));
-img_right = im2double(rgb2gray(imread('/home/munozcar/Desktop/moto2.png'))); 
-
+img_left = im2double(rgb2gray(imread('/home/munozcar/Desktop/left.jpg')));
+img_right = im2double(rgb2gray(imread('/home/munozcar/Desktop/right.jpg'))); 
+%%
+%img_left = img_left(1:487, :);
+%img_right = img_right(1:471, 395:1024);
+%%
 figure(1);
 imshow(img_left);
 title('Left Image');
@@ -26,6 +29,7 @@ descriptors_right = kpfeat(img_right, features_right);
 
 F = kpfund(xx,yy);
 
+N = size(xx,1);
 % Visualizing Epipoles
 % Now that we have an estimate of the fundamental matrix, we can find the
 % epipolar lines for each correspondence. 
@@ -53,7 +57,7 @@ plot([x_R(1) x_R(2)], [y_R1 y_R2], 'r', 'linewidth',2);
 title("Right Image"); 
 
 % Choose some point on right image
-p_R = [520 250 1]; 
+p_R = [200 140 1]; 
 % Find left image epipolar line coefficient for this point
 u = p_R*F;
 
@@ -85,9 +89,8 @@ for i = 1:N
     figure(2); 
     hold on; 
     plot(xx(i, 2), yy(i, 2), 'rs', 'markersize', 10, 'linewidth',3); 
-    plot([x_R(1) x_R(2)], [y_R1 y_R2], 'linewidth',2);
-    hold on; 
-    plot([x_R(1) x_R(2)], [y_R1 y_R2], 'linewidth',2);
+    plot([x_R(1) x_R(2)], [y_R1 y_R2], 'linewidth',0.5, 'Color', [1,1,1]);
+
 end
 
 %% Acknowledgements

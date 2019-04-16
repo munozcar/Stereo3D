@@ -24,10 +24,10 @@ yy = zeros(size(cols1, 1), 3);
 % Calculating translations for each feature
 
 % Set initial threshold
-t = 0.2;
+t = 0.1;
 matches = 0;
 
-while matches < 8
+while matches < 100
 matches = 0;
 for i=1:size(cols1, 1)
     key = mops1(i,:);
@@ -100,12 +100,20 @@ t=t+0.02;
 end
 
 %%
-nonzeroxx = [xx(xx(:,1) ~= 0,1), xx(xx(:,1) ~= 0,2)];
-notnanxx = [nonzeroxx(~isnan(nonzeroxx(:,1)),1), nonzeroxx(~isnan(nonzeroxx(:,1)),2)] ;
+nonzeroxx = [xx(xx(:,1) ~= 0,1), xx(xx(:,1) ~= 0,2), xx(xx(:,1) ~= 0,3)];
+notnanxx = [nonzeroxx(~isnan(nonzeroxx(:,1)),1), nonzeroxx(~isnan(nonzeroxx(:,1)),2), nonzeroxx(~isnan(nonzeroxx(:,1)),3)] ;
 xx = notnanxx;
+xx = sort(xx,1);
 
-nonzeroyy = [yy(yy(:,1) ~= 0,1), yy(yy(:,1) ~= 0,2)];
-notnanyy = [nonzeroyy(~isnan(nonzeroyy(:,1)),1), nonzeroyy(~isnan(nonzeroyy(:,1)),2)] ;
+[~,i] = sort(xx(:,3)); % sort by euclidean distance
+xx = xx(i,:); 
+xx = xx(1:50,:);
+
+nonzeroyy = [yy(yy(:,1) ~= 0,1), yy(yy(:,1) ~= 0,2), yy(yy(:,1) ~= 0,3)];
+notnanyy = [nonzeroyy(~isnan(nonzeroyy(:,1)),1), nonzeroyy(~isnan(nonzeroyy(:,1)),2), nonzeroyy(~isnan(nonzeroyy(:,1)),3)] ;
 yy = notnanyy;
 
+[~,i] = sort(yy(:,3)); % sort by euclidean distance
+yy = yy(i,:); 
+yy = yy(1:50,:);
 end
