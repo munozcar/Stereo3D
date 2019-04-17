@@ -1,4 +1,4 @@
-function [detection_image] = kpdet(img)
+function [detection_image] = kpdet(img, threshold)
 % create gaussian
 gauss = gkern(1);
 
@@ -34,10 +34,11 @@ img_tr = Ix2_blur + Iy2_blur;
 
 % calculate image containing the ratio of the det and trace
 detection_image = img_det ./ img_tr;
-
-threshold = 0.003;
 M = maxima(detection_image);
-detection_image = M > threshold;
 
-end
+detection_image = detection_image.*M;
+detection_image = detection_image>threshold;
+
+            
+
 

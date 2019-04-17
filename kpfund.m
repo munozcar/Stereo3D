@@ -23,8 +23,16 @@ end
 % relative to the other two is desirable, since this allows us to set it
 % equal to zero in order to enforce a singularity and reduce the rank.
 
-[U, S, V] = svd(corr_matrix); 
-smallest_col_V = V(:, 8); 
+[~, S, V] = svd(corr_matrix); 
+singulars = ones(1,9);
+for i=1:9
+    singulars(i) = S(i,i);
+end
+% find minimum singular value
+minsing = find(S==min(singulars),2);
+[i, ~] = ind2sub([N,9], minsing);
+%%
+smallest_col_V = V(:, i); 
 F = reshape(smallest_col_V, [3, 3]); 
 rank(F); % This matrix has rank 3
 
