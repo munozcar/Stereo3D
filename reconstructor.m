@@ -6,7 +6,7 @@
 % this method is fast but not optimal with respect to the reprojection error
 %
 % inputs: 
-% P0, P1 - 2x4 projection matrices
+% P0, P1 - 3x4 projection matrices
 % pts0, pts1 - 2xn corresponding image projections
 %
 % output: 
