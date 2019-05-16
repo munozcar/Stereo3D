@@ -88,6 +88,7 @@ for i = 1:N
 end  
 
 %% Reconstruction
+load Calibration/Calib_Results_stereo.mat
 
 load ./Calibration/Calib_Results_left.mat
 Rl = Rc_1;
@@ -96,8 +97,8 @@ load ./Calibration/Calib_Results_right.mat
 Rr = Rc_1;
 Tr = Tc_1;
 
-Pl = cat(2, Rl, Tl);
-Pr = cat(2, Rr, Tr);
+Pl = KK_left*cat(2, Rl, Tl);
+Pr = KK_right*cat(2, Rr, Tr);
 
 ptsl = [xx(:,1) yy(:,1)]';
 ptsr = [xx(:,2) yy(:,2)]';
@@ -110,11 +111,14 @@ X = set3D(1, :)';
 Y = set3D(2, :)';
 Z = set3D(3, :)';
 Tri = delaunay(X, Y);
+
 figure;
 trisurf(Tri, X, Y, Z, 'EdgeColor', 'none', 'FaceColor', 'red');
 lighting phong;
-view([90 0]);
+view([90 90]);
 camlight headlight;
-hold on;
+
+figure;
 scatter3(X,Y,Z);
+view([90 90]);
 

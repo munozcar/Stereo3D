@@ -1,42 +1,62 @@
-% 3D Streo Reconstructor 
+function [set3D] = reconstructor(Pl, Pr, ptl, ptr)
 
-% function to reconstruct a set of 3D points from their 2-view image
-% projections and the corresponding camera matrices. Using the mid-point
-% method to determine the 3D point as the closest midpoint of the two rays
-% this method is fast but not optimal with respect to the reprojection error
+% FUNCTION: reconstructor.
+% PARAMETERS:
+%               - Pl: left camera matrix (3x4)
+%               - Pr: right camera matrix (3x4)
+%               - ptl: left image projections (2xn)
+%               - ptr: right image projections (2xn)
+% PRODUCES: 
+%               -set3D: set of Euclidean reconstructed 3D points (3xn)
 %
-% inputs: 
-% P0, P1 - 3x4 projection matrices
-% pts0, pts1 - 2xn corresponding image projections
-%
-% output: 
-% pts3D - 3xn set of Euclidean reconstructed 3D points
-
-function [pts3D] = reconstructor(Pl, Pr, ptsl, ptsr)
+% PURPOSE:       function to reconstruct a set of 3D points from
+%                their 2-view image projections and the corresponding
+%                camera matrices. Utilizes the mid-point method.
+%%
+  % determine the number n of correspondents
+  n = size(ptl, 2);
   
-  % determine the number of points
-  npts=size(ptsl, 2);
+  % initialize the values
+  A = zeros(3, 2);
+  b = zeros(3, 1);
+  set3D = zeros(3, n);
   
+  % extract 3x3 rotation matrix Rl from Pl
+  Rl = Pl(1:3, 1:3);
+  Tl = Pl(1:3, 4);
+  % invert Rl
+  Rl=inv(Rl);
+  % calculate cl from Rl and Pl
+  cl=-Rl*Pl(:, 4);
   
-  A=zeros(3, 2);
-  b=zeros(3, 1);
-  pts3D=zeros(3, npts);
+  % extract 3x3 rotation matrix Mr from Pr
+  Rr=Pr(1:3, 1:3);
+  Tr = Pr(1:3, 4);
+  % invert matrix Rr
+  Rr=inv(Rr);
+  % calculate cr from Mr and Pr
+  cr=-Rr*Pr(:, 4);
   
-  Ml=Pl(1:3, 1:3);
-  %inverse matrix M0
-  Ml=inv(Ml);
-  cl=-Ml*Pl(:, 4);
-  Mr=Pr(1:3, 1:3);
-  Mr=inv(Mr);
-  cr=-Mr*Pr(:, 4);
-  for i=1:npts
-    A=[Ml*[ptsl(:,i);1], -Mr*[ptsr(:,i);1]];
+  % calculate the rotational matrix
+  %R = Rr*Rl';
+  % calculate the translational vector
+  %T = Tl - R'*Tr;
+  
+  % calculate the 3D point of each pair of correspondent.
+  for i=1:n
+    A=[Rl*[ptl(:,i);1], -Rr*[ptr(:,i);1]];
+    % solve for scale factor b
     b=cr-cl;
-    [Q, R]=qr(A); a=R\(Q'*b); % LS with QR
-    pts3D(:,i)=(cl+a(1)*A(:,1) + cr-a(2)*A(:,2))*0.5;
+    % Orthogonal-triangular decomposition of A
+    [Q, R]=qr(A); 
+    % solve for scale factor a
+    a = R\(Q'*b); 
+    set3D(:,i)=(cl+a(1)*A(:,1) + cr-a(2)*A(:,2))*0.5;
 
   end
 end
+
+
 
   
 
