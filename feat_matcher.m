@@ -25,7 +25,7 @@ if size(imgl,3)>1
 end
 
 % Initial detection threshold
-threshold = 0.000005;
+threshold = 0.00005;
 
 % Create Gaussian filters 
 gauss = gkern(1); gauss1 = gkern(1, 1); gauss_blur = gkern(1.5^2);
@@ -163,7 +163,8 @@ yyr = rowsr(1:minfeat); yyl = rowsl(IDX);
 
 for i=1:minfeat
     ratio = D(i,1)/D(i,2);
-    if ratio>0.35
+    %if ratio>0.35
+    if ratio>0.45
         xxr(i) = NaN; xxl(i) = NaN; yyr(i) = NaN; yyl(i) = NaN;
     else
         continue;

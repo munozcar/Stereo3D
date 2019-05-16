@@ -22,6 +22,7 @@ ydim = dims(1);
 addpath ~weinman/courses/CSC262/toolbox
 
 %% Rectify Images (skip if images already rectified)
+
 % Load camera parameters
 load Calibration/Calib_Results_stereo.mat
 R = R;
@@ -88,8 +89,10 @@ for i = 1:N
 end  
 
 %% Reconstruction
+% load the calibration result for intrinsic matrix K
 load Calibration/Calib_Results_stereo.mat
 
+% load individual results for left and right extrinsic matrices
 load ./Calibration/Calib_Results_left.mat
 Rl = Rc_1;
 Tl = Tc_1;
@@ -112,13 +115,31 @@ Y = set3D(2, :)';
 Z = set3D(3, :)';
 Tri = delaunay(X, Y);
 
-figure;
-trisurf(Tri, X, Y, Z, 'EdgeColor', 'none', 'FaceColor', 'red');
+% 3D Surface plot of reconstructed points
+figure(5);
+trisurf(Tri, X, Y, Z, 'EdgeColor', 'none', 'FaceColor', 'green');
 lighting phong;
-view([90 90]);
+view([0 90 0]);
+camroll(90);
 camlight headlight;
+title("Surface plot of reconstructed points");
 
-figure;
+
+% 3D scatter plot of the points in 3D space
+figure(6);
 scatter3(X,Y,Z);
-view([90 90]);
+view([0 90 0]);
+camroll(90);
+title("Scatter plot of reconstructed points");
+
+% Make a stem plot of the 
+figure(7);
+stem3(X, Y, Z);
+view([0 90 0]);
+camroll(90);
+grid on;
+title("Stem plot of points");
+
+
+
 
